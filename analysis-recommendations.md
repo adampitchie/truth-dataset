@@ -63,6 +63,7 @@ media-only posts are included.
 | **Embeddings + clustering** | Encode posts → semantic groups (HDBSCAN/k-means) and **semantic search** | `sentence-transformers`, `hdbscan` |
 | **Named Entity Recognition** | People/orgs/places mentioned → frequency & co-occurrence | `spaCy` |
 | **Sentiment / emotion** | Tone per post → trend over time | `VADER`, transformer classifiers |
+| **Multi-modal temporal pattern mining** | Extract number tokens and all-caps clusters from every modality (text, image descriptions, video transcripts), build a per-pattern daily frequency matrix, run change-point detection on each pattern's time series in parallel, then aggregate detected windows across modalities — surfaces patterns that are temporally concentrated within a specific date boundary, annotated by which modalities carry them | `ruptures` (PELT), `joblib`, `re`, `pandas` |
 
 ```python
 # Embed once, cache, reuse everywhere downstream
