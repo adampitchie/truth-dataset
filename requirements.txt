@@ -1,0 +1,39 @@
+# Scraping (scraper.py)
+requests>=2.31
+beautifulsoup4>=4.12
+
+# Analysis / Parquet conversion (compile.py)
+pandas>=2.0
+pyarrow>=14.0
+
+# Text analysis / topic modeling
+scikit-learn>=1.4
+gensim>=4.3
+bertopic>=0.16
+
+# Embeddings / clustering
+sentence-transformers>=2.6
+umap-learn>=0.5
+hdbscan>=0.8
+
+# NER / sentiment
+spacy>=3.7
+vaderSentiment>=3.3
+
+# Temporal detection (bursts / change-points)
+ruptures>=1.1
+pybursts>=0.1
+
+# Visualization
+plotly>=5.20
+altair>=5.2
+calplot>=0.1
+scattertext>=0.1
+
+# Networks (entity co-occurrence)
+networkx>=3.2
+pyvis>=0.3
+
+# Notebooks (Jupyter in VS Code)
+ipykernel>=6.29
+jupyter>=1.0
