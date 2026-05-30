@@ -163,7 +163,7 @@ px.scatter(plot_df, x="x", y="y", color="year",
 7. Visualize each step — charts make patterns, structure, and outliers observable
 ```
 
-## Further reading & generating new research directions
+## Generating new research directions
 
 ### Prompting Claude for progressively deeper research ideas
 
