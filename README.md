@@ -21,6 +21,7 @@ use `data/dataset.parquet`.
   - [Choosing the model](#choosing-the-model)
   - [Example prompts](#example-prompts)
 - [Environment setup (macOS)](#environment-setup-macos)
+- [Using VS Code's integrated terminal](#using-vs-codes-integrated-terminal)
 - [Setting up Jupyter notebooks in VS Code](#setting-up-jupyter-notebooks-in-vs-code)
 - [Download the dataset](#download-the-dataset)
 - [Generate the Parquet file (do this next)](#generate-the-parquet-file-do-this-next)
@@ -167,6 +168,41 @@ From then on, any `cd` into this directory automatically activates the
 ```bash
 pip install -r requirements.txt
 ```
+
+## Using VS Code's integrated terminal
+
+Instead of switching to a separate Terminal app, you can run all project commands from VS Code's built-in terminal — it's the same shell, right inside the editor.
+
+**Open it:** `Terminal → New Terminal` from the menu bar, or press `` Ctrl+` ``.
+
+VS Code opens the terminal at the project root by default. Because `pyenv local dataset` wrote a `.python-version` file here, pyenv should activate the `dataset` environment automatically when the terminal opens. Verify it's working:
+
+```bash
+which python   # should show a path inside ~/.pyenv/shims or ~/.pyenv/versions
+python --version
+```
+
+### Auto-activation not working?
+
+VS Code's integrated terminal can open as a **non-login shell** that doesn't fully initialise pyenv. The fix is a one-time project-level setting. Create `.vscode/settings.json` in the project root:
+
+```json
+{
+  "terminal.integrated.profiles.osx": {
+    "zsh": {
+      "path": "zsh",
+      "args": ["-l"]
+    }
+  },
+  "terminal.integrated.defaultProfile.osx": "zsh"
+}
+```
+
+The `-l` flag makes the shell a **login shell**, which sources `~/.zshrc` on startup — including the `pyenv init` lines you added during environment setup. After saving, close and reopen the terminal and the `dataset` environment should activate automatically whenever you open a terminal in this project.
+
+> **Applies only to macOS.** The `osx` suffix in the settings keys means these only affect macOS; other platforms are unaffected.
+
+If you'd rather set this globally (for all projects, not just this one), open VS Code user settings with `Cmd+Shift+P → Preferences: Open User Settings (JSON)` and add the same keys there.
 
 ## Setting up Jupyter notebooks in VS Code
 
