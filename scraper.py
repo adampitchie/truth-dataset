@@ -26,13 +26,16 @@ Usage:
   python scraper.py --oldest-first   # full scrape, oldest first
   python scraper.py --per-page 100   # items per request (10/25/50/100)
   python scraper.py --delay 1.5      # seconds between requests (default 1.0)
+  python scraper.py --dry-run        # report new posts without writing to disk
 
 Typical workflow:
   python scraper.py                  # once, to build the initial dataset
   python scraper.py --update         # every day after, to pull in new posts
+  python scraper.py --update --dry-run  # preview what --update would write
 """
 
 import argparse
+import contextlib
 import json
 import os
 import re
@@ -231,12 +234,19 @@ def load_existing_ids(path: Path) -> set[str]:
 
 
 def scrape(sort: str, per_page: int, delay: float, update: bool, fresh: bool,
-           transcripts: bool = True, transcript_delay: float = 0.3):
+           transcripts: bool = True, transcript_delay: float = 0.3,
+           dry_run: bool = False):
+    if dry_run:
+        print("DRY RUN — nothing will be written to disk.")
+
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     if fresh and OUTPUT_PATH.exists():
-        OUTPUT_PATH.unlink()
-        print("Fresh start: deleted existing output file.")
+        if dry_run:
+            print(f"DRY RUN — would delete {OUTPUT_PATH} and re-scrape from scratch.")
+        else:
+            OUTPUT_PATH.unlink()
+            print("Fresh start: deleted existing output file.")
 
     # Dedup is always on: load every ID we already have so we never re-write one.
     existing_ids = load_existing_ids(OUTPUT_PATH)
@@ -260,7 +270,8 @@ def scrape(sort: str, per_page: int, delay: float, update: bool, fresh: bool,
     total_written = 0
     total_skipped = 0
 
-    with OUTPUT_PATH.open("a") as out_f:
+    ctx = contextlib.nullcontext() if dry_run else OUTPUT_PATH.open("a")
+    with ctx as out_f:
         while True:
             page_num += 1
             url = build_url(cursor, sort, per_page)
@@ -299,15 +310,18 @@ def scrape(sort: str, per_page: int, delay: float, update: bool, fresh: bool,
                     total_skipped += 1
                     continue
                 # Fetch video transcripts (one small request per video).
-                if transcripts:
+                if transcripts and not dry_run:
                     for att in record["attachments"]:
                         if att["type"] == "video" and att.get("caption_url"):
                             att["transcript"] = fetch_transcript(session, att["caption_url"])
                             if att["transcript"]:
                                 page_transcripts += 1
                             time.sleep(transcript_delay)
-                out_f.write(json.dumps(record, ensure_ascii=False) + "\n")
-                out_f.flush()
+                if dry_run:
+                    print(f"  DRY RUN would write: id={record['id']} ts={record['timestamp_iso']}")
+                else:
+                    out_f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    out_f.flush()
                 existing_ids.add(record["id"])
                 page_written += 1
                 total_written += 1
@@ -366,6 +380,10 @@ def main():
         "--transcript-delay", type=float, default=0.3,
         help="Seconds to wait between transcript (VTT) requests (default: 0.3)",
     )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Fetch and report new posts without writing anything to disk",
+    )
     args = parser.parse_args()
 
     sort = "asc" if args.oldest_first else "desc"
@@ -377,6 +395,7 @@ def main():
         fresh=args.fresh,
         transcripts=not args.no_transcripts,
         transcript_delay=args.transcript_delay,
+        dry_run=args.dry_run,
     )
 
 

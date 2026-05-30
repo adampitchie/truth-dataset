@@ -75,7 +75,8 @@ def main():
             })
 
     df = pd.DataFrame(rows)
-    df["timestamp"] = pd.to_datetime(df["timestamp_iso"], utc=True, errors="coerce")
+    ts_series = df["timestamp_iso"] if "timestamp_iso" in df.columns else pd.Series(dtype=str)
+    df["timestamp"] = pd.to_datetime(ts_series, utc=True, errors="coerce")
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUTPUT_PATH, compression="snappy", index=False)
